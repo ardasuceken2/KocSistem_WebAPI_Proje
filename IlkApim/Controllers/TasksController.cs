@@ -57,7 +57,7 @@ namespace IlkApim.Controllers
         }
 
         /// <summary>
-        /// İndeks numarasına göre görevi günceller. Sadece Admin erişebilir.
+        /// İndeks numarasına göre görevi günceller Sadece Admin erişebilir.
         /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpPut("{index}")]
