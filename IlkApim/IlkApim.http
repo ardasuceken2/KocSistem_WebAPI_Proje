@@ -1,0 +1,6 @@
+@IlkApim_HostAddress = http://localhost:5087
+
+GET {{IlkApim_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
