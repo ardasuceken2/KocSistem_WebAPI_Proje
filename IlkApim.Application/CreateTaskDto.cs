@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace IlkApim.DTOs
+namespace TaskApi.Application
 {
     /// <summary>
     /// Sisteme yeni görev eklerken kullanıcıdan alınacak verileri kısıtlayan model. 

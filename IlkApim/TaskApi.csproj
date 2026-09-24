@@ -12,8 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\IlkApim.Application\IlkApim.Application.csproj" />
-    <ProjectReference Include="..\IlkApim.Infrastructure\IlkApim.Infrastructure.csproj" />
+    <ProjectReference Include="..\IlkApim.Application\TaskApi.Application.csproj" />
+    <ProjectReference Include="..\IlkApim.Infrastructure\TaskApi.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
