@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\IlkApim.Application\TaskApi.Application.csproj" />
+    <ProjectReference Include="..\IlkApim.Domain\TaskApi.Domain.csproj" />
     <ProjectReference Include="..\IlkApim.Infrastructure\TaskApi.Infrastructure.csproj" />
   </ItemGroup>
 
