@@ -1,47 +1,43 @@
+ï»¿using Microsoft.EntityFrameworkCore;
+using TaskApi.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddControllers();
 
-builder.Services.AddControllers();  
-builder.Services.AddAuthentication("Bearer") // bearer doðrulama
+// ðŸŒŸ Ä°ÅžTE YENÄ° EKLENEN VERÄ°TABANI KÃ–PRÃœSÃœ BURASI ðŸŒŸ
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddAuthentication("Bearer") // bearer doÄŸrulama
     .AddJwtBearer(options =>
-
     {
         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-
         {
             ValidateIssuer = false,  // tokeni hangi sunucu verdi sorusu
-            ValidateAudience = false, // bu kimlik hangi proje için sorus
-            ValidateLifetime = true, // oturum süresi sorusu
-            ValidateIssuerSigningKey = true, // dýþarýdan tokeni engeller sahte token kontrolü
-            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("uzungizlisifreafk1412f0kaf1039kmd")) // kullanýcýnýn imzalý bilgisini doðrulayan þifreleme anahtarý
-
-
-
-
+            ValidateAudience = false, // bu kimlik hangi proje iÃ§in sorus
+            ValidateLifetime = true, // oturum sÃ¼resi sorusu
+            ValidateIssuerSigningKey = true, // dÄ±ÅŸarÄ±dan tokeni engeller sahte token kontrolÃ¼
+            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("uzungizlisifreafk1412f0kaf1039kmd")) // kullanÄ±cÄ±nÄ±n imzalÄ± bilgisini doÄŸrulayan ÅŸifreleme anahtarÄ±
         };
     });
 
-
-
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("davetli kisiler" , policy => 
+    options.AddPolicy("davetli kisiler", policy =>
     {
         policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod();
-
-    
-    
-    
     });
 });
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    // 1. Swagger'a "Ben JWT Bearer kullanýyorum, sað üste bir kilit butonu çiz" diyoruz.
+    // 1. Swagger'a "Ben JWT Bearer kullanÄ±yorum, saÄŸ Ã¼ste bir kilit butonu Ã§iz" diyoruz.
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -49,10 +45,10 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "Sistemin üreteceði Token'ý kopyalayýp buraya yapýþtýrýn."
+        Description = "Sistemin Ã¼reteceÄŸi Token'Ä± kopyalayÄ±p buraya yapÄ±ÅŸtÄ±rÄ±n."
     });
 
-    // 2. Swagger'a "Bu kilit sistemini tüm API kapýlarýnda (metotlarda) aktif et" diyoruz.
+    // 2. Swagger'a "Bu kilit sistemini tÃ¼m API kapÄ±larÄ±nda (metotlarda) aktif et" diyoruz.
     c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
     {
         {
@@ -68,6 +64,7 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
