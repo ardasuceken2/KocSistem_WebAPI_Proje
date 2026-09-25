@@ -1,6 +1,8 @@
-﻿namespace IlkApim.Models
+﻿using System;
+
+namespace TaskApi.Domain
 {
-    /// <summary>
+    /// <summary">
     /// Sisteme giriş yapacak kullanıcıyı ve güvenlik (kilitlenme) özelliklerini temsil eder.
     /// </summary>
     public class User

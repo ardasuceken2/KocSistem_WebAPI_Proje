@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace IlkApim.DTOs
+namespace TaskApi.Application
 {
     /// <summary>
     /// Kullanıcı giriş ve kayıt işlemlerinde gerekli verileri taşıyan ve doğrulayan model.

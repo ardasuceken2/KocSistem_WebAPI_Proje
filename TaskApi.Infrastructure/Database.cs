@@ -1,6 +1,7 @@
-﻿using IlkApim.Models;
+﻿using System.Collections.Generic;
+using TaskApi.Domain; // Models klasörü kalktı, User artık Domain'den geliyor.
 
-namespace IlkApim.Data
+namespace TaskApi.Infrastructure
 {
     /// <summary>
     /// Geliştirme aşamasında database gibi davranan geçici local database

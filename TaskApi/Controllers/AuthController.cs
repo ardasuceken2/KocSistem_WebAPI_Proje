@@ -1,15 +1,16 @@
-﻿using IlkApim.Data;
-using IlkApim.DTOs;
-using IlkApim.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System;
+﻿using System;
 using System.Linq;
+using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+// Kendi katmanlarımız:
+using TaskApi.Domain;
+using TaskApi.Application;
+using TaskApi.Infrastructure;
 
 namespace TaskApi.Controllers
 {
