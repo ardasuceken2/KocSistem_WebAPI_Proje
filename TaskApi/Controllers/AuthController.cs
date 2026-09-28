@@ -54,7 +54,7 @@ namespace TaskApi.Controllers
             var newUser = new User
             {
                 Username = request.Username,
-                Password = request.Password,
+                Password = BCrypt.Net.BCrypt.HashPassword(request.Password), // ŞİFREYİ HASHLEYEREK KAYDET
                 Role = "User"
             };
 
@@ -103,8 +103,18 @@ namespace TaskApi.Controllers
                 }
             }
 
-            // Şifre kontrolü
-            if (user.Password != request.Password)
+            // Şifre kontrolü (Hash karşılaştırması)
+            bool isPasswordValid = false;
+            try 
+            {
+                // SQL'deki şifre BCrypt formatındaysa doğrula, düz metinse direkt kontrol et
+                isPasswordValid = user.Password.StartsWith("$2a$") || user.Password.StartsWith("$2b$") 
+                                  ? BCrypt.Net.BCrypt.Verify(request.Password, user.Password)
+                                  : user.Password == request.Password;
+            }
+            catch { }
+
+            if (!isPasswordValid)
             {
                 user.FailedAttemptCount++;
                 _context.SaveChanges(); // Hatalı girişi SQL'e kaydet
