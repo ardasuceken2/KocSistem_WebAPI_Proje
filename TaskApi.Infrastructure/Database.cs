@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using TaskApi.Domain; // Models klasörü kalktı, User artık Domain'den geliyor.
 
 namespace TaskApi.Infrastructure

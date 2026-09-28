@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Task Yönetim Paneli</title>
+
+  <!-- React, ReactDOM ve Babel CDN üzerinden yükleniyor (npm gerekmez!) -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.24.0/babel.min.js"></script>
+
+  <style>
+    /* ===== GENEL RESET & TEMA ===== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    /* ===== LOGIN SAYFASI ===== */
+    .login-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+    }
+
+    .login-card {
+      background: #1e293b;
+      padding: 40px;
+      border-radius: 16px;
+      width: 380px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+      border: 1px solid #334155;
+    }
+
+    .login-card h1 {
+      text-align: center;
+      margin-bottom: 8px;
+      font-size: 24px;
+      color: #60a5fa;
+    }
+
+    .login-card p.subtitle {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+
+    .tab-buttons {
+      display: flex;
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 4px;
+      margin-bottom: 24px;
+    }
+
+    .tab-buttons button {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+      background: transparent;
+      color: #64748b;
+    }
+
+    .tab-buttons button.active {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .form-group { margin-bottom: 16px; }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 11px 14px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus { border-color: #3b82f6; }
+
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+
+    .btn-primary:hover { background: #2563eb; }
+    .btn-primary:disabled { background: #1e3a5f; cursor: not-allowed; }
+
+    /* ===== MESAJ KUTULARI ===== */
+    .alert {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .alert-error { background: #450a0a; border: 1px solid #dc2626; color: #fca5a5; }
+    .alert-success { background: #052e16; border: 1px solid #16a34a; color: #86efac; }
+
+    /* ===== ANA PANEL (DASHBOARD) ===== */
+    .dashboard {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Üst bar */
+    .navbar {
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      padding: 0 32px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .navbar-brand {
+      font-size: 18px;
+      font-weight: 700;
+      color: #60a5fa;
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .role-badge {
+      background: #1d4ed8;
+      color: #bfdbfe;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .role-badge.admin { background: #7c3aed; color: #ddd6fe; }
+
+    .btn-logout {
+      background: #374151;
+      color: #d1d5db;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.2s;
+    }
+
+    .btn-logout:hover { background: #dc2626; color: white; }
+
+    /* İçerik alanı */
+    .content { padding: 32px; flex: 1; max-width: 900px; margin: 0 auto; width: 100%; }
+
+    /* Yeni görev formu */
+    .add-task-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .add-task-card h2 {
+      font-size: 16px;
+      color: #94a3b8;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .add-task-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .add-task-row input {
+      flex: 1;
+      padding: 10px 14px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .add-task-row input:focus { border-color: #3b82f6; }
+
+    .btn-add {
+      padding: 10px 20px;
+      background: #16a34a;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+
+    .btn-add:hover { background: #15803d; }
+    .btn-add:disabled { background: #374151; cursor: not-allowed; }
+
+    /* Görev listesi */
+    .task-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .task-list-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .task-count {
+      background: #334155;
+      color: #94a3b8;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+    }
+
+    .task-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: border-color 0.2s;
+    }
+
+    .task-card:hover { border-color: #475569; }
+    .task-card.completed { opacity: 0.6; }
+
+    .task-id {
+      background: #0f172a;
+      color: #475569;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .task-info { flex: 1; }
+
+    .task-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #e2e8f0;
+      margin-bottom: 4px;
+    }
+
+    .task-title.done {
+      text-decoration: line-through;
+      color: #64748b;
+    }
+
+    .task-meta {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .task-actions { display: flex; gap: 8px; }
+
+    .btn-delete {
+      background: #450a0a;
+      color: #fca5a5;
+      border: 1px solid #dc2626;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-delete:hover { background: #dc2626; color: white; }
+
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .status-done { background: #052e16; color: #86efac; border: 1px solid #16a34a; }
+    .status-pending { background: #1c1917; color: #a8a29e; border: 1px solid #44403c; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #475569;
+    }
+
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+    .loading { text-align: center; padding: 40px; color: #64748b; }
+
+    .user-info { font-size: 14px; color: #64748b; }
+    .user-info span { color: #94a3b8; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    // ========================================================
+    // AYARLAR — API adresini buradan değiştir
+    // ========================================================
+    const API_BASE = "https://localhost:7001/api"; // ← kendi port numarana göre ayarla
+
+    // ========================================================
+    // YARDIMCI FONKSİYONLAR
+    // ========================================================
+
+    // LocalStorage'dan token'ı oku
+    const getToken = () => localStorage.getItem("token");
+    const getUser  = () => JSON.parse(localStorage.getItem("user") || "null");
+
+    // API'ye istek gönderen yardımcı fonksiyon
+    async function apiRequest(endpoint, method = "GET", body = null) {
+      const headers = { "Content-Type": "application/json" };
+      const token = getToken();
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const res = await fetch(`${API_BASE}${endpoint}`, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : null,
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || data || "İstek başarısız");
+      return data;
+    }
+
+    // ========================================================
+    // GİRİŞ EKRANI BİLEŞENİ
+    // ========================================================
+    function LoginPage({ onLogin }) {
+      const [tab, setTab]         = React.useState("login");   // "login" | "register"
+      const [username, setUsername] = React.useState("");
+      const [password, setPassword] = React.useState("");
+      const [message, setMessage]   = React.useState(null);    // { type, text }
+      const [loading, setLoading]   = React.useState(false);
+
+      async function handleSubmit(e) {
+        e.preventDefault();
+        setMessage(null);
+        setLoading(true);
+
+        try {
+          const endpoint = tab === "login" ? "/auth/login" : "/auth/register";
+          const data = await apiRequest(endpoint, "POST", { username, password });
+
+          if (tab === "login") {
+            // Token ve kullanıcı bilgisini kaydet
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("user", JSON.stringify({ username, role: data.role }));
+            onLogin();
+          } else {
+            setMessage({ type: "success", text: data.message || "Kayıt başarılı! Giriş yapabilirsiniz." });
+            setTab("login");
+            setPassword("");
+          }
+        } catch (err) {
+          setMessage({ type: "error", text: err.message });
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      return (
+        <div className="login-wrapper">
+          <div className="login-card">
+            <h1>📋 Task Panel</h1>
+            <p className="subtitle">KoçSistem Staj Projesi</p>
+
+            <div className="tab-buttons">
+              <button className={tab === "login" ? "active" : ""} onClick={() => { setTab("login"); setMessage(null); }}>
+                Giriş Yap
+              </button>
+              <button className={tab === "register" ? "active" : ""} onClick={() => { setTab("register"); setMessage(null); }}>
+                Kayıt Ol
+              </button>
+            </div>
+
+            {message && (
+              <div className={`alert alert-${message.type}`}>{message.text}</div>
+            )}
+
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label>Kullanıcı Adı</label>
+                <input
+                  type="text"
+                  placeholder="kullaniciadi"
+                  value={username}
+                  onChange={e => setUsername(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Şifre</label>
+                <input
+                  type="password"
+                  placeholder="••••••"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <button className="btn-primary" type="submit" disabled={loading}>
+                {loading ? "Lütfen bekleyin..." : (tab === "login" ? "Giriş Yap" : "Kayıt Ol")}
+              </button>
+            </form>
+
+            <p style={{textAlign:"center", marginTop:"20px", fontSize:"12px", color:"#475569"}}>
+              Admin testi için: <strong style={{color:"#64748b"}}>Admin / 123456</strong>
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================================
+    // GÖREV KARTI BİLEŞENİ
+    // ========================================================
+    function TaskCard({ task, isAdmin, onDelete }) {
+      const tarih = new Date(task.createdDate).toLocaleDateString("tr-TR");
+
+      return (
+        <div className={`task-card ${task.isCompleted ? "completed" : ""}`}>
+          <div className="task-id">#{task.id}</div>
+          <div className="task-info">
+            <div className={`task-title ${task.isCompleted ? "done" : ""}`}>{task.title}</div>
+            <div className="task-meta">{task.description} · {tarih}</div>
+          </div>
+          <span className={`status-badge ${task.isCompleted ? "status-done" : "status-pending"}`}>
+            {task.isCompleted ? "✓ Tamamlandı" : "Bekliyor"}
+          </span>
+          {isAdmin && (
+            <div className="task-actions">
+              <button className="btn-delete" onClick={() => onDelete(task.id)}>Sil</button>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ========================================================
+    // ANA PANEL BİLEŞENİ
+    // ========================================================
+    function Dashboard({ onLogout }) {
+      const user = getUser();
+      const isAdmin = user?.role === "Admin";
+
+      const [tasks, setTasks]     = React.useState([]);
+      const [loading, setLoading] = React.useState(true);
+      const [newTask, setNewTask]  = React.useState("");
+      const [adding, setAdding]   = React.useState(false);
+      const [message, setMessage]  = React.useState(null);
+
+      // Görevleri API'dan yükle
+      async function loadTasks() {
+        try {
+          const data = await apiRequest("/tasks");
+          setTasks(data);
+        } catch (err) {
+          setMessage({ type: "error", text: "Görevler yüklenemedi: " + err.message });
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      React.useEffect(() => { loadTasks(); }, []);
+
+      // Yeni görev ekle
+      async function handleAdd(e) {
+        e.preventDefault();
+        if (!newTask.trim()) return;
+        setAdding(true);
+        setMessage(null);
+        try {
+          await apiRequest("/tasks", "POST", { newTask: newTask.trim(), description: "" });
+          setNewTask("");
+          await loadTasks();
+          setMessage({ type: "success", text: "Görev başarıyla eklendi!" });
+        } catch (err) {
+          setMessage({ type: "error", text: err.message });
+        } finally {
+          setAdding(false);
+        }
+      }
+
+      // Görev sil
+      async function handleDelete(id) {
+        if (!window.confirm("Bu görevi silmek istediğine emin misin?")) return;
+        try {
+          await apiRequest(`/tasks/${id}`, "DELETE");
+          await loadTasks();
+          setMessage({ type: "success", text: "Görev silindi." });
+        } catch (err) {
+          setMessage({ type: "error", text: err.message });
+        }
+      }
+
+      function handleLogout() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        onLogout();
+      }
+
+      const tamamlanan = tasks.filter(t => t.isCompleted).length;
+      const bekleyen   = tasks.filter(t => !t.isCompleted).length;
+
+      return (
+        <div className="dashboard">
+          {/* Üst Bar */}
+          <nav className="navbar">
+            <div className="navbar-brand">📋 Task Yönetim Paneli</div>
+            <div className="navbar-right">
+              <div className="user-info">Hoşgeldin, <span>{user?.username}</span></div>
+              <span className={`role-badge ${isAdmin ? "admin" : ""}`}>
+                {isAdmin ? "👑 Admin" : "👤 User"}
+              </span>
+              <button className="btn-logout" onClick={handleLogout}>Çıkış</button>
+            </div>
+          </nav>
+
+          {/* İçerik */}
+          <div className="content">
+
+            {message && (
+              <div className={`alert alert-${message.type}`} style={{marginBottom:"20px"}}>
+                {message.text}
+              </div>
+            )}
+
+            {/* Admin: Yeni görev ekleme formu */}
+            {isAdmin && (
+              <div className="add-task-card">
+                <h2>+ Yeni Görev Ekle</h2>
+                <form className="add-task-row" onSubmit={handleAdd}>
+                  <input
+                    type="text"
+                    placeholder="Görev başlığı girin..."
+                    value={newTask}
+                    onChange={e => setNewTask(e.target.value)}
+                    maxLength={100}
+                  />
+                  <button className="btn-add" type="submit" disabled={adding || !newTask.trim()}>
+                    {adding ? "Ekleniyor..." : "Ekle"}
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* Görev Listesi Başlığı */}
+            <div className="task-list-header">
+              <h2>Görevler</h2>
+              <div style={{display:"flex", gap:"8px"}}>
+                <span className="task-count">✓ {tamamlanan} tamamlandı</span>
+                <span className="task-count">⏳ {bekleyen} bekliyor</span>
+              </div>
+            </div>
+
+            {/* Görev Listesi */}
+            {loading ? (
+              <div className="loading">Görevler yükleniyor...</div>
+            ) : tasks.length === 0 ? (
+              <div className="empty-state">
+                <div className="icon">📭</div>
+                <p>Henüz hiç görev yok.</p>
+                {isAdmin && <p style={{marginTop:"8px", fontSize:"13px"}}>Yukarıdan ilk görevi ekleyebilirsin.</p>}
+              </div>
+            ) : (
+              tasks.map(task => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  isAdmin={isAdmin}
+                  onDelete={handleDelete}
+                />
+              ))
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================================
+    // ANA UYGULAMA — Hangi ekranın gösterileceğine karar verir
+    // ========================================================
+    function App() {
+      const [loggedIn, setLoggedIn] = React.useState(!!getToken());
+
+      return loggedIn
+        ? <Dashboard onLogout={() => setLoggedIn(false)} />
+        : <LoginPage   onLogin={() => setLoggedIn(true)} />;
+    }
+
+    // React uygulamasını başlat
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>
