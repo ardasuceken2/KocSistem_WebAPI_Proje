@@ -1,21 +1,21 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Security.Claims;
 using TaskApi.Application;
 using TaskApi.Domain;
 using TaskApi.Infrastructure;
-using System.Linq;
 
 namespace TaskApi.Controllers
 {
     [Authorize] // İçerideki tüm metotlar giriş yapmayı zorunlu kılar
     [ApiController]
-    [Route("api/[controller]")] // 'api/tasks' olarak dışarı açılır
+    [Route("api/[controller]")]
     public class TasksController : ControllerBase
     {
-        // 1. Veritabanı bağlantımızı tutacağımız değişken
         private readonly AppDbContext _context;
 
-        // 2. Veritabanını Dependency Injection ile içeri alıyoruz
         public TasksController(AppDbContext context)
         {
             _context = context;
@@ -24,75 +24,88 @@ namespace TaskApi.Controllers
         #region API Uç Noktaları (Endpoints)
 
         /// <summary>   
-        /// Sistemdeki tüm görevleri listeler. Giriş yapmış userlar erişebilir.
+        /// Sistemdeki görevleri listeler. Admin herkesi, User ise sadece kendini görür.
         /// </summary>
         [HttpGet]
         public IActionResult GetAll()
         {
-            // Artık geçici listeyi değil, gerçek SQL tablosunu çekiyoruz
-            var tasks = _context.TaskItems.ToList();
-            return Ok(tasks);
+            var username = User.Identity?.Name;
+            var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+            if (role == "Admin")
+            {
+                // Admin herkesin görevini görebilir
+                var allTasks = _context.TaskItems
+                    .Include(t => t.AssignedUser) // Kullanıcı bilgisini de SQL'den çek
+                    .Select(t => new {
+                        t.Id, t.Title, t.Description, t.IsCompleted, t.CreatedDate,
+                        AssignedUserName = t.AssignedUser != null ? t.AssignedUser.Username : "Atanmadı"
+                    }).ToList();
+                return Ok(allTasks);
+            }
+            else
+            {
+                // Normal kullanıcı SADECE kendisine atanan görevleri görebilir
+                var myTasks = _context.TaskItems
+                    .Include(t => t.AssignedUser)
+                    .Where(t => t.AssignedUser != null && t.AssignedUser.Username == username)
+                    .Select(t => new {
+                        t.Id, t.Title, t.Description, t.IsCompleted, t.CreatedDate,
+                        AssignedUserName = username
+                    }).ToList();
+                return Ok(myTasks);
+            }
         }
 
         /// <summary>
-        /// Admin yeni görevler ekleyebilir yetkisi verildi.
+        /// Admin yeni görev ekleyip, belli bir kişiye atayabilir.
         /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Add([FromBody] CreateTaskDto request)
         {
-            // DTO'dan gelen veriyi (kuryeyi), SQL tablomuza (TaskItem) dönüştürüyoruz
             var newTask = new TaskItem
             {
                 Title = request.NewTask,
-                Description = "Kullanıcı tarafından eklendi.", // Varsayılan açıklama
-                IsCompleted = false
+                Description = "Kullanıcıya özel görev.",
+                IsCompleted = false,
+                AssignedUserId = request.AssignedUserId // YENİ: Kime atanacak?
             };
 
             _context.TaskItems.Add(newTask);
-            _context.SaveChanges(); // Ve SQL'e kalıcı olarak kaydet!
+            _context.SaveChanges(); 
 
-            return Ok("Görev veritabanına eklendi: " + request.NewTask);
+            return Ok(new { Message = "Görev başarıyla eklendi ve atandı." });
         }
 
         /// <summary>
-        /// ID numarasına göre görevi siler. Sadece Admin erişebilir.
+        /// ID numarasına göre görevi siler.
         /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id) // İndeks yerine artık veritabanı ID'si kullanıyoruz
+        public IActionResult Delete(int id)
         {
-            var taskDb = _context.TaskItems.Find(id); // SQL'de bu ID'yi ara
-
-            if (taskDb == null)
-            {
-                return NotFound("Veritabanında böyle bir ID bulunamadı.");
-            }
+            var taskDb = _context.TaskItems.Find(id);
+            if (taskDb == null) return NotFound("Veritabanında böyle bir ID bulunamadı.");
 
             _context.TaskItems.Remove(taskDb);
-            _context.SaveChanges(); // SQL'den kalıcı olarak sil
-
-            return Ok("Görev Silindi: " + taskDb.Title);
+            _context.SaveChanges();
+            return Ok(new { Message = "Görev Silindi." });
         }
 
         /// <summary>
-        /// ID numarasına göre görevi günceller. Sadece Admin erişebilir.
+        /// ID numarasına göre görevin başlığını günceller.
         /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public IActionResult Update(int id, [FromBody] string newTitle)
         {
-            var taskDb = _context.TaskItems.Find(id); // SQL'de bu ID'yi ara
+            var taskDb = _context.TaskItems.Find(id);
+            if (taskDb == null) return NotFound("Veritabanında böyle bir ID bulunamadı.");
 
-            if (taskDb == null)
-            {
-                return NotFound("Veritabanında böyle bir ID bulunamadı.");
-            }
-
-            taskDb.Title = newTitle; // İsmi değiştir
-            _context.SaveChanges(); // SQL'de güncelle
-
-            return Ok("Veri güncellendi: " + newTitle);
+            taskDb.Title = newTitle;
+            _context.SaveChanges();
+            return Ok(new { Message = "Veri güncellendi." });
         }
 
         #endregion

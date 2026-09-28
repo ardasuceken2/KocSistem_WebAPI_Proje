@@ -12,5 +12,8 @@ namespace TaskApi.Application
         [MaxLength(10, ErrorMessage = "10 karakterden fazla liste adı olamaz.")]
         [DefaultValue("Yazi yaz")]
         public string NewTask { get; set; } = string.Empty;
+
+        // YENİ: Adminin görevi atayacağı kişinin ID'si
+        public int? AssignedUserId { get; set; }
     }
 }

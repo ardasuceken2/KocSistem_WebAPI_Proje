@@ -12,5 +12,9 @@ namespace TaskApi.Domain
         public string Description { get; set; } = string.Empty;
         public bool IsCompleted { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.Now;
+
+        // YENİ: Görevin kime atandığını tutan bağlantı (Foreign Key)
+        public int? AssignedUserId { get; set; }
+        public User? AssignedUser { get; set; }
     }
 }
