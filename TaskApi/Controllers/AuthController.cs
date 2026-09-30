@@ -146,7 +146,7 @@ namespace TaskApi.Controllers
             };
 
             var jwtSecret = _configuration["JwtSettings:SecretKey"];
-            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
+            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret!));
             var signature = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(claims: userClaims, expires: DateTime.Now.AddHours(1), signingCredentials: signature);
