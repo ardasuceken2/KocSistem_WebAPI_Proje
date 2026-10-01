@@ -7,18 +7,18 @@ namespace TaskApi.Tests
 {
     public class TaskItemTests
     {
-        [Fact] // xUnit'e bunun bir "Test Metodu" olduðunu söyleriz
+        [Fact] 
         public void AddTask_ShouldSaveToDatabase_Successfully()
         {
             
-            // Gerçek SQL'e deðil, RAM'de "TestDb" adýnda sanal bir veritabanýna baðlanýyoruz
+  
             var options = new DbContextOptionsBuilder<AppDbContext>()
                 .UseInMemoryDatabase(databaseName: "TestDb_GörevEkleme")
                 .Options;
 
             using var context = new AppDbContext(options);
 
-            // Veritabanýna kaydedilecek sahte (fake) görevimizi hazýrlýyoruz
+  
             var fakeTask = new TaskItem
             {
                 Title = "Unit Test Görevi",
@@ -32,9 +32,9 @@ namespace TaskApi.Tests
 
             var savedTask = context.TaskItems.FirstOrDefault(t => t.Title == "Unit Test Görevi");
 
-            Assert.NotNull(savedTask); // 1. Doðrulama: Kaydedilen veri null (boþ) OLMAMALI!
-            Assert.Equal("Bu bir testtir.", savedTask.Description); // 2. Doðrulama: Açýklama doðru mu?
-            Assert.False(savedTask.IsCompleted); // 3. Doðrulama: Görev tamamlanmamýþ (False) olmalý.
+            Assert.NotNull(savedTask); // veri boþ olamaz
+            Assert.Equal("Bu bir testtir.", savedTask.Description); // açýklama doðru mu
+            Assert.False(savedTask.IsCompleted); // false olmalý
         }
     }
 }
